@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BudgetBloom Login Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            min-height: 100px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>BudgetBloom Login Test</h1>
+    <p>This is a simple test page to verify database login functionality.</p>
+
+    <div class="container">
+        <h2>Login</h2>
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" placeholder="Enter username" value="testuser">
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" placeholder="Enter password" value="password">
+        </div>
+        <button id="login-btn">Login</button>
+    </div>
+
+    <div class="container">
+        <h2>User Data</h2>
+        <button id="get-user-btn">Get Current User</button>
+        <div id="response">Response will appear here...</div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set base URL for API calls
+            const baseUrl = window.location.origin;
+            console.log(`Base URL: ${baseUrl}`);
+
+            // Handle login
+            document.getElementById('login-btn').addEventListener('click', async function() {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                const responseArea = document.getElementById('response');
+                
+                try {
+                    console.log(`Attempting login with username: ${username}`);
+                    responseArea.textContent = 'Sending login request...';
+                    
+                    const response = await fetch(`${baseUrl}/api/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password }),
+                        credentials: 'include'
+                    });
+                    
+                    const data = await response.json();
+                    console.log('Login response:', data);
+                    
+                    if (response.ok) {
+                        responseArea.textContent = `Login successful! User: ${JSON.stringify(data, null, 2)}`;
+                    } else {
+                        responseArea.textContent = `Login failed: ${JSON.stringify(data, null, 2)}`;
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    responseArea.textContent = `Error: ${error.message}`;
+                }
+            });
+
+            // Handle get current user
+            document.getElementById('get-user-btn').addEventListener('click', async function() {
+                const responseArea = document.getElementById('response');
+                
+                try {
+                    console.log('Fetching current user');
+                    responseArea.textContent = 'Fetching current user...';
+                    
+                    const response = await fetch(`${baseUrl}/api/user`, {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    
+                    if (response.status === 401) {
+                        responseArea.textContent = 'Not authenticated. Please login first.';
+                        return;
+                    }
+                    
+                    const data = await response.json();
+                    console.log('User data:', data);
+                    responseArea.textContent = `Current user: ${JSON.stringify(data, null, 2)}`;
+                } catch (error) {
+                    console.error('Get user error:', error);
+                    responseArea.textContent = `Error: ${error.message}`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
